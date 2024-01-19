@@ -1,3 +1,5 @@
+L = 661
+
 
 def jobsFromFile(file_path="input.txt"):
   jobs = []
@@ -95,7 +97,6 @@ class EndBefore:
 
 variables = {}
 count = 0
-L = 1096
 
 
 def variableIndex(precedes):
@@ -120,6 +121,16 @@ def deleteOutput():
 def appendLineOutput(line):
   with open('output.txt', 'a') as f:
     f.write(str(line) + ' 0 \n')
+
+
+def addHeadFile(line):
+  # read current content
+  with open('output.txt', 'r') as f:
+    content = f.read()
+
+  # add line to head of content and write to file
+  with open('output.txt', 'w') as f:
+    f.write(line + '\n' + content)
 
 
 deleteOutput()
@@ -170,8 +181,12 @@ for jobIndex, job in enumerate(jobs):
         variableIndex(EndBefore(jobIndex, opeIndex, t2))
     )
 
+running = 0
+maxRunning = len(jobs) * len(jobs[0])
+
 for jobIndex, job in enumerate(jobs):
   for opeIndex, operation in enumerate(job):
+
     # condition 5: start after t -> start after t-1
     for t in range(1, L+1):
       var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
@@ -192,7 +207,7 @@ for jobIndex, job in enumerate(jobs):
       var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+processingTime-1))
       appendLineOutput(f'-{var1} -{var2}')
 
-    # condition 8:
+    # condition 8: start after + precedes
     precedes_list = [key for key in variables.keys()
                      if isinstance(key, Precedes)
                      and key.jobIndex1 == jobIndex and key.opeIndex1 == opeIndex]
@@ -203,5 +218,15 @@ for jobIndex, job in enumerate(jobs):
         var3 = variableIndex(
             StartAfter(precedes.jobIndex2, precedes.opeIndex2, t+processingTime))
         appendLineOutput(f'-{var1} -{var2} {var3}')
+
+    # for progress
+    running += 1
+    percent = running * 1.0 / maxRunning * 100
+    print(f"Running {percent:.2f}%")
+
+with open('output.txt', 'r') as file:
+  lines = file.readlines()
+
+addHeadFile(f"p cnf {len(variables)} {len(lines)}")
 
 writeVariables()
