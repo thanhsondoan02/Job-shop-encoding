@@ -70,6 +70,9 @@ class StartAfter:
               and self.time == other.time)
     return False
 
+  def __repr__(self) -> str:
+    return f"Sa({self.jobIndex},{self.opeIndex},{self.time})"
+
 
 class EndBefore:
   def __init__(self, jobIndex, opeIndex, time):
@@ -86,6 +89,9 @@ class EndBefore:
               and self.time == other.time)
     return False
 
+  def __repr__(self) -> str:
+    return f"Eb({self.jobIndex},{self.opeIndex},{self.time})"
+
 
 variables = {}
 count = 0
@@ -98,6 +104,12 @@ def variableIndex(precedes):
     count += 1
     variables[precedes] = count
   return variables[precedes]
+
+
+def writeVariables():
+  with open('variables.txt', 'w') as f:
+    for key, value in variables.items():
+      f.write(f'{key} {value}\n')
 
 
 def deleteOutput():
@@ -145,6 +157,17 @@ for key, value in machineOperations.items():
       )
       appendLineOutput(f'{var1} {var2}')
 
-for key, value in variables.items():
-  if value in [1977, 1978]:
-    print(f"Key: {key}")
+for jobIndex, job in enumerate(jobs):
+  for opeIndex, operation in enumerate(job):
+    # condition 3: start after
+    t1 = sum(job[i][1] for i in range(0, opeIndex))
+    appendLineOutput(
+        variableIndex(StartAfter(jobIndex, opeIndex, t1))
+    )
+    # condition 4: end before
+    t2 = L - sum(job[i][1] for i in range(opeIndex+1, len(job)))
+    appendLineOutput(
+        variableIndex(EndBefore(jobIndex, opeIndex, t2))
+    )
+
+writeVariables()
