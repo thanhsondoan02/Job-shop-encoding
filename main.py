@@ -170,4 +170,18 @@ for jobIndex, job in enumerate(jobs):
         variableIndex(EndBefore(jobIndex, opeIndex, t2))
     )
 
+for jobIndex, job in enumerate(jobs):
+  for opeIndex, operation in enumerate(job):
+    # condition 5: start after t -> start after t-1
+    for t in range(1, L+1):
+      var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
+      var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
+      appendLineOutput(f'-{var1} {var2}')
+      
+    # condition 6: end before t -> end before t+1
+    for t in range(0, L):
+      var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
+      var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
+      appendLineOutput(f'-{var1} {var2}')
+
 writeVariables()
