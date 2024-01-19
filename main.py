@@ -11,7 +11,7 @@ def jobsFromFile(file_path="input.txt"):
       for j in range(0, operations_count):
         job.append((int(line[j*2]), int(line[j*2+1])))
       jobs.append(job)
-  return jobs
+  return jobs_count, operations_count, jobs
 
 
 def printJobs(jobs):
@@ -27,6 +27,9 @@ class Operation:
     self.operationIndex = operationIndex
     self.machine = machine
     self.processingTime = processingTime
+
+  def __repr__(self):
+    return f"Ope({self.jobIndex},{self.operationIndex},{self.machine}, {self.processingTime})"
 
 
 class Precedes:
@@ -45,6 +48,12 @@ class Precedes:
               and self.jobIndex2 == other.jobIndex2 and self.opeIndex2 == other.opeIndex2)
     return False
 
+  def __str__(self):
+    return f"Pr({self.jobIndex1},{self.opeIndex1},{self.jobIndex2},{self.opeIndex2})"
+
+  def __repr__(self):
+    return f"Pr({self.jobIndex1},{self.opeIndex1},{self.jobIndex2},{self.opeIndex2})"
+
 
 class StartAfter:
   def __init__(self, jobIndex, opeIndex, time):
@@ -57,7 +66,8 @@ class StartAfter:
 
   def __eq__(self, other):
     if isinstance(other, StartAfter):
-      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex and self.time == other.time)
+      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex
+              and self.time == other.time)
     return False
 
 
@@ -97,13 +107,44 @@ def deleteOutput():
 
 def appendLineOutput(line):
   with open('output.txt', 'a') as f:
-    f.write(line + '\n')
+    f.write(str(line) + ' 0 \n')
 
 
 deleteOutput()
-jobs = jobsFromFile()
+jobs_count, operations_count, jobs = jobsFromFile()
+machineOperations = {}
 
-for job in jobs:
-  for operation in job:
-    print("machine: ", operation[0], "time: ", operation[1])
-  print("")
+for jobIndex, job in enumerate(jobs):
+  for opeIndex, operation in enumerate(job):
+    machine, time = operation
+
+    # condition 1: precedes
+    if opeIndex != len(job) - 1:
+      appendLineOutput(
+          variableIndex(Precedes(jobIndex, opeIndex, jobIndex, opeIndex+1))
+      )
+
+    # add to machineOperations for condition 2
+    if machine not in machineOperations:
+      machineOperations[machine] = []
+    machineOperations[machine].append(
+        Operation(jobIndex, opeIndex, machine, time))
+
+# condition 2: same machine
+# value: array of all operations in machine key
+for key, value in machineOperations.items():
+  for i in range(0, len(value)-1):
+    for j in range(i+1, len(value)):
+      var1 = variableIndex(
+          Precedes(value[i].jobIndex, value[i].operationIndex,
+                   value[j].jobIndex, value[j].operationIndex)
+      )
+      var2 = variableIndex(
+          Precedes(value[j].jobIndex, value[j].operationIndex,
+                   value[i].jobIndex, value[i].operationIndex)
+      )
+      appendLineOutput(f'{var1} {var2}')
+
+for key, value in variables.items():
+  if value in [1977, 1978]:
+    print(f"Key: {key}")
