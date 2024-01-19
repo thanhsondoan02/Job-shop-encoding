@@ -1,5 +1,5 @@
 
-def readFile(file_path = "input.txt"):
+def jobsFromFile(file_path="input.txt"):
   jobs = []
   with open(file_path, "r") as file:
     jobs_count, operations_count = file.readline().strip().split()
@@ -13,11 +13,13 @@ def readFile(file_path = "input.txt"):
       jobs.append(job)
   return jobs
 
+
 def printJobs(jobs):
   for job in jobs:
     for operation in job:
       print("machine: ", operation[0], "time: ", operation[1])
     print("")
+
 
 class Operation:
   def __init__(self, jobIndex, operationIndex, machine, processingTime):
@@ -25,6 +27,7 @@ class Operation:
     self.operationIndex = operationIndex
     self.machine = machine
     self.processingTime = processingTime
+
 
 class Precedes:
   def __init__(self, jobIndex1, opeIndex1, jobIndex2, opeIndex2):
@@ -38,9 +41,10 @@ class Precedes:
 
   def __eq__(self, other):
     if isinstance(other, Precedes):
-      return (self.jobIndex1 == other.jobIndex1 and self.opeIndex1 == other.opeIndex1 
+      return (self.jobIndex1 == other.jobIndex1 and self.opeIndex1 == other.opeIndex1
               and self.jobIndex2 == other.jobIndex2 and self.opeIndex2 == other.opeIndex2)
     return False
+
 
 class StartAfter:
   def __init__(self, jobIndex, opeIndex, time):
@@ -53,9 +57,9 @@ class StartAfter:
 
   def __eq__(self, other):
     if isinstance(other, StartAfter):
-      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex 
-              and self.time == other.time)
+      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex and self.time == other.time)
     return False
+
 
 class EndBefore:
   def __init__(self, jobIndex, opeIndex, time):
@@ -68,17 +72,38 @@ class EndBefore:
 
   def __eq__(self, other):
     if isinstance(other, EndBefore):
-      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex 
+      return (self.jobIndex == other.jobIndex and self.opeIndex == other.opeIndex
               and self.time == other.time)
     return False
 
+
 variables = {}
 count = 0
+L = 1096
 
-def addVariable(precedes):
+
+def variableIndex(precedes):
   global count
   if precedes not in variables:
     count += 1
     variables[precedes] = count
   return variables[precedes]
 
+
+def deleteOutput():
+  with open('output.txt', 'w') as f:
+    pass
+
+
+def appendLineOutput(line):
+  with open('output.txt', 'a') as f:
+    f.write(line + '\n')
+
+
+deleteOutput()
+jobs = jobsFromFile()
+
+for job in jobs:
+  for operation in job:
+    print("machine: ", operation[0], "time: ", operation[1])
+  print("")
