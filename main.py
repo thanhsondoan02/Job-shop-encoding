@@ -177,11 +177,31 @@ for jobIndex, job in enumerate(jobs):
       var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
       var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
       appendLineOutput(f'-{var1} {var2}')
-      
+
     # condition 6: end before t -> end before t+1
     for t in range(0, L):
       var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
       var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
       appendLineOutput(f'-{var1} {var2}')
+
+    processingTime = operation[1]
+
+    # condition 7: start after -> not end before:
+    for t in range(0, L-processingTime+1):
+      var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
+      var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+processingTime-1))
+      appendLineOutput(f'-{var1} -{var2}')
+
+    # condition 8:
+    precedes_list = [key for key in variables.keys()
+                     if isinstance(key, Precedes)
+                     and key.jobIndex1 == jobIndex and key.opeIndex1 == opeIndex]
+    for t in range(0, L-processingTime+1):
+      for precedes in precedes_list:
+        var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
+        var2 = variableIndex(precedes)
+        var3 = variableIndex(
+            StartAfter(precedes.jobIndex2, precedes.opeIndex2, t+processingTime))
+        appendLineOutput(f'-{var1} -{var2} {var3}')
 
 writeVariables()
