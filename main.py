@@ -1,8 +1,7 @@
 import pygame
-L = 678
 
 
-def jobsFromFile(file_path="input.txt"):
+def jobsFromFile(file_path):
   jobs = []
   with open(file_path, "r") as file:
     jobs_count, operations_count = file.readline().strip().split()
@@ -100,6 +99,12 @@ variables = {}
 count = 0
 
 
+def resetVarAndCount():
+  global variables, count
+  variables = {}
+  count = 0
+
+
 def variableIndex(precedes):
   global count
   if precedes not in variables:
@@ -108,29 +113,29 @@ def variableIndex(precedes):
   return variables[precedes]
 
 
-def writeVariables():
-  with open('variables.txt', 'w') as f:
+def writeVariables(variablesPath):
+  with open(variablesPath, 'w') as f:
     for key, value in variables.items():
       f.write(f'{key} {value}\n')
 
 
-def deleteOutput():
-  with open('output.txt', 'w') as f:
+def deleteOutput(outputPath):
+  with open(outputPath, 'w') as f:
     pass
 
 
-def appendLineOutput(line):
-  with open('output.txt', 'a') as f:
+def appendLineOutput(line, outputPath):
+  with open(outputPath, 'a') as f:
     f.write(str(line) + ' 0\n')
 
 
-def addHeadFile(line):
+def addHeadFile(line, outputPath):
   # read current content
-  with open('output.txt', 'r') as f:
+  with open(outputPath, 'r') as f:
     content = f.read()
 
   # add line to head of content and write to file
-  with open('output.txt', 'w') as f:
+  with open(outputPath, 'w') as f:
     f.write(line + '\n' + content)
 
 
@@ -140,100 +145,116 @@ def alarm():
   pygame.mixer.music.play()
 
 
-deleteOutput()
-jobs_count, operations_count, jobs = jobsFromFile()
-machineOperations = {}
+def encoding(inputPath, outputPath, variablesPath, L):
+  deleteOutput(outputPath)
+  resetVarAndCount()
 
-for jobIndex, job in enumerate(jobs):
-  for opeIndex, operation in enumerate(job):
-    machine, time = operation
+  _, _, jobs = jobsFromFile(inputPath)
+  machineOperations = {}
 
-    # condition 1: precedes in same job
-    if opeIndex != len(job) - 1:
+  for jobIndex, job in enumerate(jobs):
+    for opeIndex, operation in enumerate(job):
+      machine, time = operation
+
+      # condition 1: precedes in same job
+      if opeIndex != len(job) - 1:
+        appendLineOutput(
+            variableIndex(Precedes(jobIndex, opeIndex, jobIndex, opeIndex+1)),
+            outputPath
+        )
+
+      # add to machineOperations for condition 2
+      if machine not in machineOperations:
+        machineOperations[machine] = []
+      machineOperations[machine].append(
+          Operation(jobIndex, opeIndex, machine, time))
+
+  # condition 2: precedes in same machine
+  # value: array of all operations in machine key
+  for key, value in machineOperations.items():
+    for i in range(0, len(value)-1):
+      for j in range(i+1, len(value)):
+        var1 = variableIndex(
+            Precedes(value[i].jobIndex, value[i].operationIndex,
+                     value[j].jobIndex, value[j].operationIndex)
+        )
+        var2 = variableIndex(
+            Precedes(value[j].jobIndex, value[j].operationIndex,
+                     value[i].jobIndex, value[i].operationIndex)
+        )
+        appendLineOutput(f'{var1} {var2}', outputPath)
+
+  # for show progress
+  running = 0
+  maxRunning = len(jobs) * len(jobs[0])
+
+  for jobIndex, job in enumerate(jobs):
+    for opeIndex, operation in enumerate(job):
+
+      # condition 3: start after
+      t1 = sum(job[i][1] for i in range(0, opeIndex))
       appendLineOutput(
-          variableIndex(Precedes(jobIndex, opeIndex, jobIndex, opeIndex+1))
+          variableIndex(StartAfter(jobIndex, opeIndex, t1)),
+          outputPath
       )
 
-    # add to machineOperations for condition 2
-    if machine not in machineOperations:
-      machineOperations[machine] = []
-    machineOperations[machine].append(
-        Operation(jobIndex, opeIndex, machine, time))
-
-# condition 2: precedes in same machine
-# value: array of all operations in machine key
-for key, value in machineOperations.items():
-  for i in range(0, len(value)-1):
-    for j in range(i+1, len(value)):
-      var1 = variableIndex(
-          Precedes(value[i].jobIndex, value[i].operationIndex,
-                   value[j].jobIndex, value[j].operationIndex)
+      # condition 4: end before
+      t2 = L - sum(job[i][1] for i in range(opeIndex+1, len(job)))
+      appendLineOutput(
+          variableIndex(EndBefore(jobIndex, opeIndex, t2)),
+          outputPath
       )
-      var2 = variableIndex(
-          Precedes(value[j].jobIndex, value[j].operationIndex,
-                   value[i].jobIndex, value[i].operationIndex)
-      )
-      appendLineOutput(f'{var1} {var2}')
 
-# for show progress
-running = 0
-maxRunning = len(jobs) * len(jobs[0])
-
-for jobIndex, job in enumerate(jobs):
-  for opeIndex, operation in enumerate(job):
-
-    # condition 3: start after
-    t1 = sum(job[i][1] for i in range(0, opeIndex))
-    appendLineOutput(
-        variableIndex(StartAfter(jobIndex, opeIndex, t1))
-    )
-
-    # condition 4: end before
-    t2 = L - sum(job[i][1] for i in range(opeIndex+1, len(job)))
-    appendLineOutput(
-        variableIndex(EndBefore(jobIndex, opeIndex, t2))
-    )
-
-    # condition 5: start after t -> start after t-1
-    for t in range(1, L+1):
-      var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
-      var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
-      appendLineOutput(f'-{var1} {var2}')
-
-    # condition 6: end before t -> end before t+1
-    for t in range(0, L):
-      var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
-      var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
-      appendLineOutput(f'-{var1} {var2}')
-
-    processingTime = operation[1]
-
-    # condition 7: start after -> not end before:
-    for t in range(0, L-processingTime+2):
-      var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
-      var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+processingTime-1))
-      appendLineOutput(f'-{var1} -{var2}')
-
-    # condition 8: start after + precedes
-    precedes_list = [key for key in variables.keys()
-                     if isinstance(key, Precedes)
-                     and key.jobIndex1 == jobIndex and key.opeIndex1 == opeIndex]
-    for t in range(0, L-processingTime+1):
-      for precedes in precedes_list:
+      # condition 5: start after t -> start after t-1
+      for t in range(1, L+1):
         var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
-        var2 = variableIndex(precedes)
-        var3 = variableIndex(
-            StartAfter(precedes.jobIndex2, precedes.opeIndex2, t+processingTime))
-        appendLineOutput(f'-{var1} -{var2} {var3}')
+        var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
+        appendLineOutput(f'-{var1} {var2}', outputPath)
 
-    # show progress
-    running += 1
-    percent = running * 1.0 / maxRunning * 100
-    print(f"Running {percent:.2f}%")
+      # condition 6: end before t -> end before t+1
+      for t in range(0, L):
+        var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
+        var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
+        appendLineOutput(f'-{var1} {var2}', outputPath)
 
-with open('output.txt', 'r') as file:
-  lines = file.readlines()
+      processingTime = operation[1]
 
-addHeadFile(f"p cnf {len(variables)} {len(lines)}")
-writeVariables()
-alarm()
+      # condition 7: start after -> not end before:
+      for t in range(0, L-processingTime+2):
+        var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
+        var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+processingTime-1))
+        appendLineOutput(f'-{var1} -{var2}', outputPath)
+
+      # condition 8: start after + precedes
+      precedes_list = [key for key in variables.keys()
+                       if isinstance(key, Precedes)
+                       and key.jobIndex1 == jobIndex and key.opeIndex1 == opeIndex]
+      for t in range(0, L-processingTime+1):
+        for precedes in precedes_list:
+          var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
+          var2 = variableIndex(precedes)
+          var3 = variableIndex(
+              StartAfter(precedes.jobIndex2, precedes.opeIndex2, t+processingTime))
+          appendLineOutput(f'-{var1} -{var2} {var3}', outputPath)
+
+      # show progress
+      running += 1
+      percent = running * 1.0 / maxRunning * 100
+      print(f"Running {percent:.2f}%")
+
+  with open(outputPath, 'r') as file:
+    lines = file.readlines()
+
+  addHeadFile(f"p cnf {len(variables)} {len(lines)}", outputPath)
+  writeVariables(variablesPath)
+  alarm()
+
+
+for i in range(662, 678):
+  outputFileName = f"abz9_L{i}_encoded.cnf"
+  variableFileName = f"abz9_L{i}_variables.txt"
+  print(f"Start encoding ABZ9 L{i}")
+  encoding("./abz9/abz9.txt",
+           f"./abz9/L{i}/{outputFileName}",
+           f"./abz9/L{i}/{variableFileName}",
+           L=i)
