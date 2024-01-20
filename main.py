@@ -1,4 +1,5 @@
-L = 661
+import pygame
+L = 678
 
 
 def jobsFromFile(file_path="input.txt"):
@@ -120,7 +121,7 @@ def deleteOutput():
 
 def appendLineOutput(line):
   with open('output.txt', 'a') as f:
-    f.write(str(line) + ' 0 \n')
+    f.write(str(line) + ' 0\n')
 
 
 def addHeadFile(line):
@@ -133,6 +134,12 @@ def addHeadFile(line):
     f.write(line + '\n' + content)
 
 
+def alarm():
+  pygame.mixer.init()
+  pygame.mixer.music.load("./phonk_cristino_siuuu.mp3")
+  pygame.mixer.music.play()
+
+
 deleteOutput()
 jobs_count, operations_count, jobs = jobsFromFile()
 machineOperations = {}
@@ -141,7 +148,7 @@ for jobIndex, job in enumerate(jobs):
   for opeIndex, operation in enumerate(job):
     machine, time = operation
 
-    # condition 1: precedes
+    # condition 1: precedes in same job
     if opeIndex != len(job) - 1:
       appendLineOutput(
           variableIndex(Precedes(jobIndex, opeIndex, jobIndex, opeIndex+1))
@@ -153,7 +160,7 @@ for jobIndex, job in enumerate(jobs):
     machineOperations[machine].append(
         Operation(jobIndex, opeIndex, machine, time))
 
-# condition 2: same machine
+# condition 2: precedes in same machine
 # value: array of all operations in machine key
 for key, value in machineOperations.items():
   for i in range(0, len(value)-1):
@@ -168,24 +175,24 @@ for key, value in machineOperations.items():
       )
       appendLineOutput(f'{var1} {var2}')
 
-for jobIndex, job in enumerate(jobs):
-  for opeIndex, operation in enumerate(job):
-    # condition 3: start after
-    t1 = sum(job[i][1] for i in range(0, opeIndex))
-    appendLineOutput(
-        variableIndex(StartAfter(jobIndex, opeIndex, t1))
-    )
-    # condition 4: end before
-    t2 = L - sum(job[i][1] for i in range(opeIndex+1, len(job)))
-    appendLineOutput(
-        variableIndex(EndBefore(jobIndex, opeIndex, t2))
-    )
-
+# for show progress
 running = 0
 maxRunning = len(jobs) * len(jobs[0])
 
 for jobIndex, job in enumerate(jobs):
   for opeIndex, operation in enumerate(job):
+
+    # condition 3: start after
+    t1 = sum(job[i][1] for i in range(0, opeIndex))
+    appendLineOutput(
+        variableIndex(StartAfter(jobIndex, opeIndex, t1))
+    )
+
+    # condition 4: end before
+    t2 = L - sum(job[i][1] for i in range(opeIndex+1, len(job)))
+    appendLineOutput(
+        variableIndex(EndBefore(jobIndex, opeIndex, t2))
+    )
 
     # condition 5: start after t -> start after t-1
     for t in range(1, L+1):
@@ -202,7 +209,7 @@ for jobIndex, job in enumerate(jobs):
     processingTime = operation[1]
 
     # condition 7: start after -> not end before:
-    for t in range(0, L-processingTime+1):
+    for t in range(0, L-processingTime+2):
       var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
       var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+processingTime-1))
       appendLineOutput(f'-{var1} -{var2}')
@@ -219,7 +226,7 @@ for jobIndex, job in enumerate(jobs):
             StartAfter(precedes.jobIndex2, precedes.opeIndex2, t+processingTime))
         appendLineOutput(f'-{var1} -{var2} {var3}')
 
-    # for progress
+    # show progress
     running += 1
     percent = running * 1.0 / maxRunning * 100
     print(f"Running {percent:.2f}%")
@@ -228,5 +235,5 @@ with open('output.txt', 'r') as file:
   lines = file.readlines()
 
 addHeadFile(f"p cnf {len(variables)} {len(lines)}")
-
 writeVariables()
+alarm()
