@@ -250,7 +250,7 @@ def encoding(inputPath, outputPath, variablesPath, L):
   alarm()
 
 
-for i in range(662, 678):
+for i in [661, 678]:
   outputFileName = f"abz9_L{i}_encoded.cnf"
   variableFileName = f"abz9_L{i}_variables.txt"
   print(f"Start encoding ABZ9 L{i}")
