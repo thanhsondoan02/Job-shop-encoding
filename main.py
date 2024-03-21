@@ -250,11 +250,11 @@ def encoding(inputPath, outputPath, variablesPath, L):
   alarm()
 
 
-for i in [661, 678]:
-  outputFileName = f"abz9_L{i}_encoded.cnf"
-  variableFileName = f"abz9_L{i}_variables.txt"
-  print(f"Start encoding ABZ9 L{i}")
-  encoding("./abz9/abz9.txt",
-           f"./abz9/L{i}/{outputFileName}",
-           f"./abz9/L{i}/{variableFileName}",
+for i in range(54, 57):
+  outputFileName = f"ft06_L{i}_encoded.cnf"
+  variableFileName = f"ft06_L{i}_variables.txt"
+  print(f"Start encoding ft06 L{i}")
+  encoding("./ft06/ft06.txt",
+           f"./ft06/L{i}/{outputFileName}",
+           f"./ft06/L{i}/{variableFileName}",
            L=i)
