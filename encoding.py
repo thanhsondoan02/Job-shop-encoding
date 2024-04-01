@@ -1,5 +1,7 @@
-import pygame
-from variables import Precedes, StartAfter, EndBefore
+from variables import *
+from file_process import *
+from utils import alarm
+
 
 def jobsFromFile(file_path):
   jobs = []
@@ -33,6 +35,7 @@ class Operation:
   def __repr__(self):
     return f"Ope({self.jobIndex},{self.operationIndex},{self.machine}, {self.processingTime})"
 
+
 variables = {}
 count = 0
 
@@ -57,34 +60,8 @@ def writeVariables(variablesPath):
       f.write(f'{key} {value}\n')
 
 
-def deleteOutput(outputPath):
-  with open(outputPath, 'w') as f:
-    pass
-
-
-def appendLineOutput(line, outputPath):
-  with open(outputPath, 'a') as f:
-    f.write(str(line) + ' 0\n')
-
-
-def addHeadFile(line, outputPath):
-  # read current content
-  with open(outputPath, 'r') as f:
-    content = f.read()
-
-  # add line to head of content and write to file
-  with open(outputPath, 'w') as f:
-    f.write(line + '\n' + content)
-
-
-def alarm():
-  pygame.mixer.init()
-  pygame.mixer.music.load("./phonk_cristino_siuuu.mp3")
-  pygame.mixer.music.play()
-
-
 def encoding(inputPath, outputPath, variablesPath, L):
-  deleteOutput(outputPath)
+  clearFileContent(outputPath)
   resetVarAndCount()
 
   _, _, jobs = jobsFromFile(inputPath)
