@@ -21,11 +21,23 @@ class Precedes:
     return f"Pr({self.jobIndex1},{self.opeIndex1},{self.jobIndex2},{self.opeIndex2})"
 
 
+def isStartAfter(variable):
+  return variable[0] == "S" and variable[1] == "a"
+
+
 class StartAfter:
   def __init__(self, jobIndex, opeIndex, time):
     self.jobIndex = jobIndex
     self.opeIndex = opeIndex
     self.time = time
+
+  def __init__(self, variable):
+    if not isStartAfter(variable):
+      raise Exception("Variable", variable, "is not start after")
+    numbers = [int(x) for x in variable[3:-1].split(',')]
+    self.jobIndex = numbers[0]
+    self.opeIndex = numbers[1]
+    self.time = numbers[2]
 
   def __hash__(self):
     return hash((self.jobIndex, self.opeIndex, self.time))
