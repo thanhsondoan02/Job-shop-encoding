@@ -31,14 +31,6 @@ class StartAfter:
     self.opeIndex = opeIndex
     self.time = time
 
-  def __init__(self, variable):
-    if not isStartAfter(variable):
-      raise Exception("Variable", variable, "is not start after")
-    numbers = [int(x) for x in variable[3:-1].split(',')]
-    self.jobIndex = numbers[0]
-    self.opeIndex = numbers[1]
-    self.time = numbers[2]
-
   def __hash__(self):
     return hash((self.jobIndex, self.opeIndex, self.time))
 
@@ -69,3 +61,10 @@ class EndBefore:
 
   def __repr__(self) -> str:
     return f"Eb({self.jobIndex},{self.opeIndex},{self.time})"
+
+
+def stringToStartAfter(text):
+  if not isStartAfter(text):
+    raise Exception("Variable", text, "is not start after")
+  numbers = [int(x) for x in text[3:-1].split(',')]
+  return StartAfter(numbers[0], numbers[1], numbers[2])

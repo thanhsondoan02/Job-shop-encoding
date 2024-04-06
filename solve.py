@@ -1,12 +1,23 @@
 import sys
 from variables import *
 from file_process import *
-from variables import StartAfter, isStartAfter
+
+
+class SolvedOperation:
+  def __init__(self, jobIndex, opeIndex, machine, processingTime, startTime, endTime):
+    self.jobIndex = jobIndex
+    self.opeIndex = opeIndex
+    self.machine = machine
+    self.processingTime = processingTime
+    self.startTime = startTime
+    self.endTime = endTime
+
 
 # argument 1: variables path
 # argument 2: result path
 # argument 3: solved path
-argument_count = 3
+# argument 4: problem path
+argument_count = 4
 startTimeDict = {}
 
 if len(sys.argv) != argument_count + 1:
@@ -15,6 +26,7 @@ else:
   variablePath = sys.argv[1]
   resultPath = sys.argv[2]
   solvedPath = sys.argv[3]
+  problemPath = sys.argv[4]
 
   with open(resultPath, 'r') as file:
     content = file.read().split()
@@ -27,7 +39,7 @@ else:
   clearFileContent(solvedPath)
   for line in lines:
     try:
-      var = StartAfter(line.split()[0])
+      var = stringToStartAfter(line.split()[0])
     except:
       continue
     value = int(line.split()[1]) in numbers  # true or false
@@ -37,11 +49,42 @@ else:
       else:
         if var.time > startTimeDict[(var.jobIndex, var.opeIndex)]:
           startTimeDict[(var.jobIndex, var.opeIndex)] = var.time
-  # for item in startTimeDict.items():
+  _, _, jobs = jobsFromFile(problemPath)
 
-  #   newL
-  #   appendLineOutput(newLine, solvedPath, addZero=False)
-  # print(startTimeDict)
+  # map to other properties: machine, processingTime, startTime, endTime
+  solvedOperations = []
   for i in startTimeDict.keys():
-    newLine = f"({i[0]},{i[1]}): {startTimeDict[i]}"
+    jobIndex = i[0]
+    opeIndex = i[1]
+    machine = jobs[jobIndex][opeIndex][0]
+    processingTime = jobs[jobIndex][opeIndex][1]
+    startTime = startTimeDict[i]
+    endTime = startTime + processingTime
+    solvedOperations.append(SolvedOperation(
+        jobIndex, opeIndex, machine, processingTime, startTime, endTime))
+
+  # sort by job index and operation index
+  sortedSolvedOperations = sorted(solvedOperations, key=lambda x: (x.jobIndex, x.opeIndex))
+  for i in sortedSolvedOperations:
+    jobIndex = i.jobIndex
+    opeIndex = i.opeIndex
+    machine = i.machine
+    processingTime = i.processingTime
+    startTime = i.startTime
+    endTime = i.endTime
+    newLine = f"({jobIndex},{opeIndex}): {machine} {processingTime} {startTime} {endTime}"
+    appendLineOutput(newLine, solvedPath, addZero=False)
+
+  appendLineOutput("\n\n", solvedPath, addZero=False)
+
+  # sort by machine and start time
+  sortedSolvedOperations = sorted(solvedOperations, key=lambda x: (x.machine, x.startTime))
+  for i in sortedSolvedOperations:
+    jobIndex = i.jobIndex
+    opeIndex = i.opeIndex
+    machine = i.machine
+    processingTime = i.processingTime
+    startTime = i.startTime
+    endTime = i.endTime
+    newLine = f"({jobIndex},{opeIndex}): {machine} {processingTime} {startTime} {endTime}"
     appendLineOutput(newLine, solvedPath, addZero=False)

@@ -2,22 +2,6 @@ from variables import *
 from file_process import *
 from utils import alarm
 
-
-def jobsFromFile(file_path):
-  jobs = []
-  with open(file_path, "r") as file:
-    jobs_count, operations_count = file.readline().strip().split()
-    jobs_count = int(jobs_count)
-    operations_count = int(operations_count)
-    for i in range(jobs_count):
-      job = []
-      line = file.readline().strip().split()
-      for j in range(0, operations_count):
-        job.append((int(line[j*2]), int(line[j*2+1])))
-      jobs.append(job)
-  return jobs_count, operations_count, jobs
-
-
 def printJobs(jobs):
   for job in jobs:
     for operation in job:
@@ -165,7 +149,7 @@ def encoding(inputPath, outputPath, variablesPath, L):
   alarm()
 
 
-for i in range(53, 58):
+for i in range(53, 54):
   outputFileName = f"ft06_L{i}_encoded.cnf"
   variableFileName = f"ft06_L{i}_variables.txt"
   print(f"Start encoding ft06 L{i}")
