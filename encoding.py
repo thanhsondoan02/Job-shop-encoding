@@ -1,6 +1,7 @@
 from variables import *
 from file_process import *
 from utils import alarm
+import os
 
 def printJobs(jobs):
   for job in jobs:
@@ -148,12 +149,15 @@ def encoding(inputPath, outputPath, variablesPath, L):
   writeVariables(variablesPath)
   alarm()
 
-
-for i in range(53, 54):
-  outputFileName = f"ft06_L{i}_encoded.cnf"
-  variableFileName = f"ft06_L{i}_variables.txt"
-  print(f"Start encoding ft06 L{i}")
-  encoding("./ft06/ft06.txt",
-           f"./ft06/L{i}/{outputFileName}",
-           f"./ft06/L{i}/{variableFileName}",
+problem = "mine"
+for i in range(11, 15):
+  outputFileName = f"{problem}_L{i}_encoded.cnf"
+  variableFileName = f"{problem}_L{i}_variables.txt"
+  print(f"Start encoding {problem} L{i}")
+  folderPath = f"./{problem}/L{i}"
+  if not os.path.exists(folderPath):
+    os.makedirs(folderPath)
+  encoding(f"./{problem}/{problem}.txt",
+           f"./{problem}/L{i}/{outputFileName}",
+           f"./{problem}/L{i}/{variableFileName}",
            L=i)
