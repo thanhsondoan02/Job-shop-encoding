@@ -2,6 +2,7 @@ from variables import *
 from file_process import *
 from utils import alarm
 import os
+import sys
 
 def printJobs(jobs):
   for job in jobs:
@@ -31,13 +32,26 @@ def resetVarAndCount():
   count = 0
 
 
-def variableIndex(precedes):
+def variableIndex(inputVar):
   global count
-  if precedes not in variables:
+  if inputVar not in variables:
     count += 1
-    variables[precedes] = count
-  return variables[precedes]
+    variables[inputVar] = count
+  return variables[inputVar]
 
+
+# for checking a time value is positive
+# return min time of all variables
+def minTime():
+  minTime = None
+  for key in variables.keys():
+    if isinstance(key, StartAfter):
+      if minTime is None or key.time < minTime:
+        minTime = key.time
+    if isinstance(key, EndBefore):
+      if minTime is None or key.time < minTime:
+        minTime = key.time
+  return minTime
 
 def writeVariables(variablesPath):
   with open(variablesPath, 'w') as f:
@@ -147,10 +161,20 @@ def encoding(inputPath, outputPath, variablesPath, L):
 
   addHeadFile(f"p cnf {len(variables)} {len(lines)}", outputPath)
   writeVariables(variablesPath)
+  print("min time:", minTime())
   alarm()
 
-problem = "mine"
-for i in range(11, 15):
+
+# argument 1: problem name
+# next arguments: list of L
+problem = sys.argv[1]
+makespan_list = []
+for i in range(2, len(sys.argv)):
+  makespan_list.append(int(sys.argv[i]))
+  
+print(problem, makespan_list)
+  
+for i in makespan_list:
   outputFileName = f"{problem}_L{i}_encoded.cnf"
   variableFileName = f"{problem}_L{i}_variables.txt"
   print(f"Start encoding {problem} L{i}")
