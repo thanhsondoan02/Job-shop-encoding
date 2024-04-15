@@ -4,6 +4,7 @@ from utils import alarm
 import os
 import sys
 import subprocess
+import time
 
 
 def printJobs(jobs):
@@ -183,6 +184,8 @@ for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
 
 for i in makespan_list:
+  start_time = time.time()
+  
   inputPath = f"./{problem}/{problem}.txt"
   folderPath = f"./{problem}/L{i}"
   encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
@@ -207,12 +210,17 @@ for i in makespan_list:
     stderr = result.stderr.decode()
     with open(terminalFilePath, 'w') as f:
       f.write(stderr.replace('\n', ''))
-      
-    # decode to start time
+
+    # run decoder
     with open(resultFilePath, 'r') as f:
       first_line = f.readline()
-    if first_line == "SAT":
+    if first_line == "SAT\n":
       command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
       result = subprocess.run(
           command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
+    # calculate CPU time for each L
+    end_time = time.time()
+    time_taken = end_time - start_time
+    appendLineOutput(
+        f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
