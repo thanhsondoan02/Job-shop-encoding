@@ -4,6 +4,7 @@ from utils import alarm
 import os
 import sys
 
+
 def printJobs(jobs):
   for job in jobs:
     for operation in job:
@@ -39,19 +40,6 @@ def variableIndex(inputVar):
     variables[inputVar] = count
   return variables[inputVar]
 
-
-# for checking a time value is positive
-# return min time of all variables
-def minTime():
-  minTime = None
-  for key in variables.keys():
-    if isinstance(key, StartAfter):
-      if minTime is None or key.time < minTime:
-        minTime = key.time
-    if isinstance(key, EndBefore):
-      if minTime is None or key.time < minTime:
-        minTime = key.time
-  return minTime
 
 def writeVariables(variablesPath):
   with open(variablesPath, 'w') as f:
@@ -161,9 +149,29 @@ def encoding(inputPath, outputPath, variablesPath, L):
 
   addHeadFile(f"p cnf {len(variables)} {len(lines)}", outputPath)
   writeVariables(variablesPath)
-  print("min time:", minTime())
   alarm()
 
+
+def lowerUpper(inputPath):
+  minTime = None
+  for key in variables.keys():
+    if isinstance(key, StartAfter):
+      if minTime is None or key.time < minTime:
+        minTime = key.time
+    if isinstance(key, EndBefore):
+      if minTime is None or key.time < minTime:
+        minTime = key.time
+  lowerBound = -minTime
+
+  _, _, jobs = jobsFromFile(inputPath)
+  upperBound = 0
+  for job in jobs:
+    for operation in job:
+      upperBound += operation[1]
+
+  lowerUpperFile = f"./{problem}/{problem}_lower_upper.txt"
+  with open(lowerUpperFile, 'w') as f:
+    f.write(f"LB = {lowerBound}, UB = {upperBound}")
 
 # argument 1: problem name
 # next arguments: list of L
@@ -171,17 +179,19 @@ problem = sys.argv[1]
 makespan_list = []
 for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
-  
-print(problem, makespan_list)
-  
+
 for i in makespan_list:
   outputFileName = f"{problem}_L{i}_encoded.cnf"
   variableFileName = f"{problem}_L{i}_variables.txt"
-  print(f"Start encoding {problem} L{i}")
+  inputPath = f"./{problem}/{problem}.txt"
   folderPath = f"./{problem}/L{i}"
+  outputPath = f"{folderPath}/{outputFileName}"
+  variablePath = f"{folderPath}/{variableFileName}"
+
   if not os.path.exists(folderPath):
     os.makedirs(folderPath)
-  encoding(f"./{problem}/{problem}.txt",
-           f"./{problem}/L{i}/{outputFileName}",
-           f"./{problem}/L{i}/{variableFileName}",
-           L=i)
+
+  print(f"Start encoding {problem} L{i}")
+  encoding(inputPath, outputPath, variablePath, L=i)
+  if i == 0:
+    lowerUpper(inputPath)

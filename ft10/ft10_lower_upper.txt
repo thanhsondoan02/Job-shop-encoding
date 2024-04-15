@@ -1,0 +1,1 @@
+UB = 5109 LB = b'pygame 2.4.0 (SDL 2.26.4, Python 3.11.5)\r\nHello from the pygame community. https://www.pygame.org/contribute.html\r\n1 []\r\n'
