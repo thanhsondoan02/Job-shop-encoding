@@ -144,7 +144,7 @@ def encoding(inputPath, outputPath, variablesPath, L):
       # show progress
       running += 1
       percent = running * 1.0 / maxRunning * 100
-      print(f"Running {percent:.2f}%")
+      print(f"Encoding {percent:.2f}%")
 
   with open(outputPath, 'r') as file:
     lines = file.readlines()
@@ -203,6 +203,7 @@ for i in makespan_list:
     lowerUpper(inputPath)
   else:
     # run minisat solver
+    print(f"Running minisat solver for {problem} L{i}...")
     command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
     result = subprocess.run(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -212,6 +213,7 @@ for i in makespan_list:
       f.write(stderr.replace('\n', ''))
 
     # run decoder
+    print(f"Running decoder for {problem} L{i}...")
     with open(resultFilePath, 'r') as f:
       first_line = f.readline()
     if first_line == "SAT\n":
@@ -224,3 +226,4 @@ for i in makespan_list:
     time_taken = end_time - start_time
     appendLineOutput(
         f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
+    print(f"Done {problem} L{i} in {time_taken} seconds\n")
