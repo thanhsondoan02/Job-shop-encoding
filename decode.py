@@ -15,7 +15,7 @@ class SolvedOperation:
 
 # argument 1: variables path
 # argument 2: result path
-# argument 3: solved path
+# argument 3: decode path
 # argument 4: problem path
 argument_count = 4
 startTimeDict = {}
@@ -25,7 +25,7 @@ if len(sys.argv) != argument_count + 1:
 else:
   variablePath = sys.argv[1]
   resultPath = sys.argv[2]
-  solvedPath = sys.argv[3]
+  decodedPath = sys.argv[3]
   problemPath = sys.argv[4]
 
   with open(resultPath, 'r') as file:
@@ -36,7 +36,7 @@ else:
   with open(variablePath, 'r') as file:
     lines = file.readlines()
 
-  clearFileContent(solvedPath)
+  clearFileContent(decodedPath)
   for line in lines:
     try:
       var = stringToStartAfter(line.split()[0])
@@ -73,9 +73,9 @@ else:
     startTime = i.startTime
     endTime = i.endTime
     newLine = f"({jobIndex},{opeIndex}): {machine} {processingTime} {startTime} {endTime}"
-    appendLineOutput(newLine, solvedPath, addZero=False)
+    appendLineOutput(newLine, decodedPath, addZero=False)
 
-  appendLineOutput("\n\n", solvedPath, addZero=False)
+  appendLineOutput("\n\n", decodedPath, addZero=False)
 
   # sort by machine and start time
   sortedSolvedOperations = sorted(solvedOperations, key=lambda x: (x.machine, x.startTime))
@@ -87,4 +87,4 @@ else:
     startTime = i.startTime
     endTime = i.endTime
     newLine = f"({jobIndex},{opeIndex}): {machine} {processingTime} {startTime} {endTime}"
-    appendLineOutput(newLine, solvedPath, addZero=False)
+    appendLineOutput(newLine, decodedPath, addZero=False)

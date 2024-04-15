@@ -3,6 +3,7 @@ from file_process import *
 from utils import alarm
 import os
 import sys
+import subprocess
 
 
 def printJobs(jobs):
@@ -173,6 +174,7 @@ def lowerUpper(inputPath):
   with open(lowerUpperFile, 'w') as f:
     f.write(f"LB = {lowerBound}, UB = {upperBound}")
 
+
 # argument 1: problem name
 # next arguments: list of L
 problem = sys.argv[1]
@@ -181,17 +183,36 @@ for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
 
 for i in makespan_list:
-  outputFileName = f"{problem}_L{i}_encoded.cnf"
-  variableFileName = f"{problem}_L{i}_variables.txt"
   inputPath = f"./{problem}/{problem}.txt"
   folderPath = f"./{problem}/L{i}"
-  outputPath = f"{folderPath}/{outputFileName}"
-  variablePath = f"{folderPath}/{variableFileName}"
+  encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
+  variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
+  resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
+  terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
+  decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
 
   if not os.path.exists(folderPath):
     os.makedirs(folderPath)
 
   print(f"Start encoding {problem} L{i}")
-  encoding(inputPath, outputPath, variablePath, L=i)
+  encoding(inputPath, encodedFilePath, variablePath, L=i)
   if i == 0:
     lowerUpper(inputPath)
+  else:
+    # run minisat solver
+    command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
+    result = subprocess.run(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout = result.stdout.decode()
+    stderr = result.stderr.decode()
+    with open(terminalFilePath, 'w') as f:
+      f.write(stderr.replace('\n', ''))
+      
+    # decode to start time
+    with open(resultFilePath, 'r') as f:
+      first_line = f.readline()
+    if first_line == "SAT":
+      command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
+      result = subprocess.run(
+          command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
