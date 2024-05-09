@@ -151,7 +151,6 @@ def encoding(inputPath, outputPath, variablesPath, L):
 
   addHeadFile(f"p cnf {len(variables)} {len(lines)}", outputPath)
   writeVariables(variablesPath)
-  alarm()
 
 
 def lowerUpper(inputPath):
@@ -184,46 +183,48 @@ for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
 
 for i in makespan_list:
-  start_time = time.time()
-  
-  inputPath = f"./{problem}/{problem}.txt"
-  folderPath = f"./{problem}/L{i}"
-  encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
-  variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
-  resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
-  terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
-  decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
+  for repeatIndex in range(10):
+    start_time = time.time()
 
-  if not os.path.exists(folderPath):
-    os.makedirs(folderPath)
+    inputPath = f"./{problem}/{problem}.txt"
+    folderPath = f"./{problem}/L{i}/repeat{repeatIndex}"
+    encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
+    variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
+    resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
+    terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
+    decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
 
-  print(f"Start encoding {problem} L{i}")
-  encoding(inputPath, encodedFilePath, variablePath, L=i)
-  if i == 0:
-    lowerUpper(inputPath)
-  else:
-    # run minisat solver
-    print(f"Running minisat solver for {problem} L{i}...")
-    command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
-    result = subprocess.run(
-        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout = result.stdout.decode()
-    stderr = result.stderr.decode()
-    with open(terminalFilePath, 'w') as f:
-      f.write(stderr.replace('\n', ''))
+    if not os.path.exists(folderPath):
+      os.makedirs(folderPath)
 
-    # run decoder
-    print(f"Running decoder for {problem} L{i}...")
-    with open(resultFilePath, 'r') as f:
-      first_line = f.readline()
-    if first_line == "SAT\n":
-      command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
+    print(f"Start encoding {problem} L{i}")
+    encoding(inputPath, encodedFilePath, variablePath, L=i)
+    if i == 0:
+      lowerUpper(inputPath)
+    else:
+      # run minisat solver
+      print(f"Running minisat solver for {problem} L{i}...")
+      command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
       result = subprocess.run(
           command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    # calculate CPU time for each L
-    end_time = time.time()
-    time_taken = end_time - start_time
-    appendLineOutput(
-        f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
-    print(f"Done {problem} L{i} in {time_taken} seconds\n")
+      stdout = result.stdout.decode()
+      stderr = result.stderr.decode()
+      with open(terminalFilePath, 'w') as f:
+        f.write(stderr.replace('\n', ''))
+
+      # run decoder
+      print(f"Running decoder for {problem} L{i}...")
+      with open(resultFilePath, 'r') as f:
+        first_line = f.readline()
+      if first_line == "SAT\n":
+        command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
+        result = subprocess.run(
+            command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+      # calculate CPU time for each L
+      end_time = time.time()
+      time_taken = end_time - start_time
+      appendLineOutput(
+          f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
+      print(f"Done {problem} L{i} in {time_taken} seconds\n")
+  alarm()
