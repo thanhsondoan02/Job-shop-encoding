@@ -227,4 +227,4 @@ for i in makespan_list:
       appendLineOutput(
           f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
       print(f"Done {problem} L{i} in {time_taken} seconds\n")
-  alarm()
+  alarm() 
