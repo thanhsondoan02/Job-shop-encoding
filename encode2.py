@@ -110,13 +110,13 @@ def encoding(inputPath, outputPath, variablesPath, L):
       )
 
       # condition 5: start after t -> start after t-1
-      for t in range(1, L+1):
+      for t in range(t1, L+1):
         var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
         var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
         appendLineOutput(f'-{var1} {var2}', outputPath)
 
       # condition 6: end before t -> end before t+1
-      for t in range(0, L):
+      for t in range(0, t2):
         var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
         var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
         appendLineOutput(f'-{var1} {var2}', outputPath)
@@ -175,6 +175,9 @@ def lowerUpper(inputPath):
     f.write(f"LB = {lowerBound}, UB = {upperBound}")
 
 
+def count_folders(directory):
+  return len([name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))])
+
 # argument 1: problem name
 # next arguments: list of L
 problem = sys.argv[1]
@@ -183,11 +186,11 @@ for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
 
 for i in makespan_list:
-  for repeatIndex in range(10):
+  for repeatIndex in range(1):
     start_time = time.time()
 
     inputPath = f"./{problem}/{problem}.txt"
-    folderPath = f"./{problem}/L{i}/repeat{repeatIndex}"
+    folderPath = f"./{problem}/L{i}/repeat{repeatIndex + count_folders(f'./{problem}/L{i}')}"
     encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
     variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
     resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
