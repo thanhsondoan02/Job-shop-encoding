@@ -4,13 +4,13 @@ import sys
 
 
 def extract_time(file_path):
-    with open(file_path, 'r') as file:
-        content = file.read()
-        match = re.search(r'Time taken: (\d+.\d+) seconds', content)
-        if match:
-            return float(match.group(1))
-        else:
-            return None
+  with open(file_path, 'r') as file:
+    content = file.read()
+    match = re.search(r'Time taken: (\d+.\d+) seconds', content)
+    if match:
+      return float(match.group(1))
+    else:
+      return None
 
 # argument 1: problem name
 problemName = sys.argv[1]

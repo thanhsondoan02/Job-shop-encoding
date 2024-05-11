@@ -240,6 +240,7 @@ while True:
     encoding(inputPath, encodedFilePath, variablePath, L=i)
   else:
     copy_file(f'{root}/solution0/{problem}_L{i}_encoded.cnf', encodedFilePath)
+    copy_file(f'{root}/solution0/{problem}_L{i}_variables.txt', variablePath)
 
   addNegativePreviousSolutions(root, encodedFilePath)
 
