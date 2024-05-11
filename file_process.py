@@ -75,4 +75,4 @@ def checkDuplicateSchedule(solutionsDir):
   print(f"Total {len(set(schedules))} different schedules.")
 
 
-checkDuplicateSchedule("D:\EncodingJSSP\mine\L12\solutions")
+# checkDuplicateSchedule("D:\EncodingJSSP\mine\L12\solutions")

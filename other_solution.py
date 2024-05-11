@@ -234,8 +234,9 @@ while True:
   terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
   decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
 
-  print(f"Start encoding {problem} L{i}")
+  # Using encoded file from first solution if possible
   if count_folders(root) == 1:
+    print(f"Start encoding {problem} L{i}")
     encoding(inputPath, encodedFilePath, variablePath, L=i)
   else:
     copy_file(f'{root}/solution0/{problem}_L{i}_encoded.cnf', encodedFilePath)
