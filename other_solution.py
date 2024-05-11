@@ -110,13 +110,13 @@ def encoding(inputPath, outputPath, variablesPath, L):
       )
 
       # condition 5: start after t -> start after t-1
-      for t in range(t1, L+1):
+      for t in range(1, L+1):
         var1 = variableIndex(StartAfter(jobIndex, opeIndex, t))
         var2 = variableIndex(StartAfter(jobIndex, opeIndex, t-1))
         appendLineOutput(f'-{var1} {var2}', outputPath)
 
       # condition 6: end before t -> end before t+1
-      for t in range(0, t2):
+      for t in range(0, L):
         var1 = variableIndex(EndBefore(jobIndex, opeIndex, t))
         var2 = variableIndex(EndBefore(jobIndex, opeIndex, t+1))
         appendLineOutput(f'-{var1} {var2}', outputPath)
@@ -180,15 +180,16 @@ def count_folders(directory):
 
 
 def incrementLastNumOfFirstLine(file_path):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+  with open(file_path, 'r') as file:
+    lines = file.readlines()
 
-    numbers = lines[0].split()
-    numbers[-1] = str(int(numbers[-1]) + 1)
-    lines[0] = ' '.join(numbers) + '\n'
+  numbers = lines[0].split()
+  numbers[-1] = str(int(numbers[-1]) + 1)
+  lines[0] = ' '.join(numbers) + '\n'
 
-    with open(file_path, 'w') as file:
-        file.writelines(lines)
+  with open(file_path, 'w') as file:
+    file.writelines(lines)
+
 
 def addNegativePreviousSolutions(root, encodedFilePath):
   count = count_folders(root)
@@ -208,54 +209,64 @@ def addNegativePreviousSolutions(root, encodedFilePath):
         raise Exception("No second line in the file")
 
 
-# argument 1: problem name
-# argument 2: optimal makespan
-problem = sys.argv[1]
-optimalMakespan = int(sys.argv[2])
+while True:
+  # argument 1: problem name
+  # argument 2: optimal makespan
+  problem = sys.argv[1]
+  optimalMakespan = int(sys.argv[2])
 
-start_time = time.time()
+  start_time = time.time()
 
-i = optimalMakespan
-inputPath = f"./{problem}/{problem}.txt"
-root = f"./{problem}/L{i}/solutions"
-folderPath = f"{root}/solution{count_folders(root)}"
-encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
-variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
-resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
-terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
-decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
+  i = optimalMakespan
+  inputPath = f"./{problem}/{problem}.txt"
 
-if not os.path.exists(folderPath):
-  os.makedirs(folderPath)
+  root = f"./{problem}/L{i}/solutions"
+  if not os.path.exists(root):
+    os.makedirs(root)
 
-print(f"Start encoding {problem} L{i}")
-encoding(inputPath, encodedFilePath, variablePath, L=i)
+  folderPath = f"{root}/solution{count_folders(root)}"
+  if not os.path.exists(folderPath):
+    os.makedirs(folderPath)
 
-addNegativePreviousSolutions(root, encodedFilePath)
+  encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
+  variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
+  resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
+  terminalFilePath = f"{folderPath}/{problem}_L{i}_terminal.txt"
+  decodedFilePath = f"{folderPath}/{problem}_L{i}_decoded.txt"
 
-# run minisat solver
-print(f"Running minisat solver for {problem} L{i}...")
-command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
-result = subprocess.run(
-    command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-stdout = result.stdout.decode()
-stderr = result.stderr.decode()
-with open(terminalFilePath, 'w') as f:
-  f.write(stderr.replace('\n', ''))
+  print(f"Start encoding {problem} L{i}")
+  encoding(inputPath, encodedFilePath, variablePath, L=i)
 
-# run decoder
-print(f"Running decoder for {problem} L{i}...")
-with open(resultFilePath, 'r') as f:
-  first_line = f.readline()
-if first_line == "SAT\n":
-  command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
+  addNegativePreviousSolutions(root, encodedFilePath)
+
+  # run minisat solver
+  print(f"Running minisat solver for {problem} L{i}...")
+  command = f"..\.\minisat.exe {encodedFilePath} {resultFilePath}"
   result = subprocess.run(
       command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  stdout = result.stdout.decode()
+  stderr = result.stderr.decode()
+  with open(terminalFilePath, 'w') as f:
+    f.write(stderr.replace('\n', ''))
 
-# calculate CPU time for each L
-end_time = time.time()
-time_taken = end_time - start_time
-appendLineOutput(
-    f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
-print(f"Done {problem} L{i} in {time_taken} seconds\n")
-alarm()
+  # run decoder
+  print(f"Running decoder for {problem} L{i}...")
+  with open(resultFilePath, 'r') as f:
+    first_line = f.readline()
+  if first_line == "SAT\n":
+    command = f"python decode.py {variablePath} {resultFilePath} {decodedFilePath} {inputPath}"
+    result = subprocess.run(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  # calculate CPU time for each L
+  end_time = time.time()
+  time_taken = end_time - start_time
+  appendLineOutput(
+      f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
+  print(f"Done {problem} L{i} in {time_taken} seconds\n")
+  alarm()
+  
+  # check if UNSAT stop
+  with open(resultFilePath, 'r') as file:
+    first_line = file.readline().strip()
+  if first_line != "SAT": break
