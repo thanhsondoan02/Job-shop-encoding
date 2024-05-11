@@ -1,6 +1,9 @@
 # Description: File processing functions for the project
 
 # append line to end of file with 0 at the end
+import os
+
+
 def appendLineOutput(line, outputPath, addZero=True):
   with open(outputPath, 'a') as f:
     if addZero:
@@ -39,3 +42,37 @@ def jobsFromFile(file_path):
         job.append((int(line[j*2]), int(line[j*2+1])))
       jobs.append(job)
   return jobs_count, operations_count, jobs
+
+
+def copy_file(source_path, destination_path):
+    with open(source_path, 'r') as source_file:
+        content = source_file.read()
+    with open(destination_path, 'w') as destination_file:
+        destination_file.write(content)
+
+
+def checkDuplicateSchedule(solutionsDir):
+  solutions = os.listdir(solutionsDir)
+  schedules = []
+  for solution in solutions:
+    filesInSolutionDir = os.listdir(f'{solutionsDir}/{solution}')
+
+    # if folder does not have encode file -> next solution
+    decodedFileName = None
+    for v in filesInSolutionDir:
+      if 'decode' in v:
+        decodedFileName = v
+        break
+    if decodedFileName == None: continue
+
+    # get content in encode file except last 2 line (no time added)
+    with open(f'{solutionsDir}/{solution}/{decodedFileName}', 'r') as file:
+      lines = file.readlines()[:-2]
+      schedule = ''.join(lines)
+      schedules.append(schedule)
+    
+  print(f"Total {len(schedules)} set variables")
+  print(f"Total {len(set(schedules))} different schedules.")
+
+
+checkDuplicateSchedule("D:\EncodingJSSP\mine\L12\solutions")
