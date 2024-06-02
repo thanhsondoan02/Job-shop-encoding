@@ -1,0 +1,57 @@
+# Introduction
+
+# Description
+
+# Authors
+
+This repository was made by [Doan Thanh Son](https://github.com/thanhsondoan02), a fourth-year student of VNU University of Engineering and Technology.
+
+# Usage
+
+## Installation
+
+Before using, please clone this repo from Github.
+
+```
+git clone https://github.com/thanhsondoan02/Job-shop-encoding.git
+```
+
+After that, install python and all required libs.
+
+
+## Find lower bound and upper bound
+Encoding the problem with makespan 0 to get lower bound and upper bound:
+```
+python encode.py [problem name] 0
+```
+For example, to find lower bound and upper bound of problem Orb07:
+```
+python encode.py Orb07 0
+```
+The result is in orb07\Orb07_lower_upper.txt
+
+## Find optimal makespan
+With each makespan, solve the problem using this:
+```
+python encode.py [problem name] [makespan]
+```
+Solve a problem with multiple makespan:
+```
+python encode.py [problem name] [makespan1] [makespan2] [makespan3] ...
+```
+For example, solve problem La03 with makespan 596 & 597
+```
+python encode.py La03 596 597
+```
+
+## Find other schedules
+Find other schedules in limit time using the following command:
+```
+python other_solution.py [problem name] [makespan] [limit time]
+```
+For example, find other schedules for problem FT06, with optimal makespan 56 with limit time of 60 seconds:
+```
+python other_solution.py FT06 56 60
+```
+
+# Report

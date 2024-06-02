@@ -183,11 +183,14 @@ for i in range(2, len(sys.argv)):
   makespan_list.append(int(sys.argv[i]))
 
 for i in makespan_list:
-  for repeatIndex in range(10):
+  for repeatIndex in range(1):
     start_time = time.time()
 
     inputPath = f"./{problem}/{problem}.txt"
-    folderPath = f"./{problem}/L{i}/repeat{repeatIndex}"
+    root = f"./{problem}/L{i}"
+    if not os.path.exists(root):
+      os.makedirs(root)
+    folderPath = f"{root}/repeat{count_folders_repeat(root)}"
     encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
     variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
     resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"

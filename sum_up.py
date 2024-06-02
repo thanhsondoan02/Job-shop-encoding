@@ -23,10 +23,13 @@ makespans = [d for d in os.listdir(problemDir) if os.path.isdir(
 makespans = [int(d[1:]) for d in makespans if d != 'L0']
 makespans = sorted(makespans)
 
+outputText = ""
 for makespan in makespans:
   makespanDir = f'{problemDir}/L{makespan}'
+  
+  # time for each repeat
   repeats = [d for d in os.listdir(makespanDir)
-             if os.path.isdir(os.path.join(makespanDir, d))]
+             if os.path.isdir(os.path.join(makespanDir, d)) and 'repeat' in d]
   pTimes = []
   for repeat in repeats:
     repeatDir = f'{makespanDir}/{repeat}'
@@ -34,8 +37,26 @@ for makespan in makespans:
     if len(files) == 0: continue
     decodedFile = [i for i in files if "decoded" in i][0]
     pTimes.append(extract_time(f"{repeatDir}/{decodedFile}"))
-  line = ""
-  line += str(makespan)
+    
+  # variables and clauses
+  encodedFile = [i for i in files if "encoded" in i][0]
+  with open(f"{repeatDir}/{encodedFile}", 'r') as file:
+    lines = file.readlines()
+  variables = int(lines[0].split()[2])
+  clauses = int(lines[0].split()[3])
+    
+  # satisfiable or not
+  with open(f"{repeatDir}/{decodedFile}", 'r') as file:
+    lines = file.readlines()
+  satisfiable = len(lines) > 4
+    
+  # concat to string
+  outputText += str(makespan)
+  outputText += f' {variables} {clauses}'
   for pTime in pTimes:
-    line += " " + str(pTime)
-  print(line)
+    outputText += " " + str(pTime)
+  if satisfiable:
+    outputText += " yes\n"
+  else:
+    outputText += " no\n"
+print(outputText)

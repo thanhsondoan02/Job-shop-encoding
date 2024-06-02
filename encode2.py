@@ -175,9 +175,6 @@ def lowerUpper(inputPath):
     f.write(f"LB = {lowerBound}, UB = {upperBound}")
 
 
-def count_folders(directory):
-  return len([name for name in os.listdir(directory) if os.path.isdir(os.path.join(directory, name))])
-
 # argument 1: problem name
 # next arguments: list of L
 problem = sys.argv[1]
@@ -190,7 +187,7 @@ for i in makespan_list:
     start_time = time.time()
 
     inputPath = f"./{problem}/{problem}.txt"
-    folderPath = f"./{problem}/L{i}/repeat{repeatIndex + count_folders(f'./{problem}/L{i}')}"
+    folderPath = f"./{problem}/L{i}/repeat{count_folders(f'./{problem}/L{i}')}"
     encodedFilePath = f"{folderPath}/{problem}_L{i}_encoded.cnf"
     variablePath = f"{folderPath}/{problem}_L{i}_variables.txt"
     resultFilePath = f"{folderPath}/{problem}_L{i}_result.txt"
@@ -230,4 +227,4 @@ for i in makespan_list:
       appendLineOutput(
           f"\nTime taken: {time_taken} seconds", decodedFilePath, addZero=False)
       print(f"Done {problem} L{i} in {time_taken} seconds\n")
-  alarm() 
+  alarm()

@@ -1,6 +1,6 @@
 from variables import *
 from file_process import *
-from utils import alarm
+from sum_up_solution import sumUpSolutions
 import os
 import sys
 import subprocess
@@ -209,15 +209,17 @@ def addNegativePreviousSolutions(root, encodedFilePath):
         raise Exception("No second line in the file")
 
 
-while True:
-  # argument 1: problem name
-  # argument 2: optimal makespan
-  problem = sys.argv[1]
-  optimalMakespan = int(sys.argv[2])
+# argument 1: problem name
+# argument 2: makespan
+# argument 3: limit time
+problem = sys.argv[1]
+makespan = int(sys.argv[2])
+limitTime = int(sys.argv[3])
 
+while True:
   start_time = time.time()
 
-  i = optimalMakespan
+  i = makespan
   inputPath = f"./{problem}/{problem}.txt"
 
   root = f"./{problem}/L{i}/solutions"
@@ -275,3 +277,10 @@ while True:
     first_line = file.readline().strip()
   if first_line != "SAT":
     break
+
+  # if exceed time limit stop
+  limitTime -= time_taken
+  if limitTime < 0:
+    break
+
+sumUpSolutions(problem, makespan)
