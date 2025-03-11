@@ -1,10 +1,13 @@
 # Introduction
+Solves Job-Shop Scheduling Problems by SAT encoding.
 
 # Description
 
+This repository solves some common Job-Shop Scheduling Problems by translating them into Boolean Satisfiability Problem (SAT) using the encoding method from M. Koshimura [[1](#ref1)]. For more detailed information, please refer to the [report](https://github.com/thanhsondoan02/Job-shop-encoding/blob/main/report/DoanThanhSon_report.pdf).
+
 # Authors
 
-This repository was made by [Doan Thanh Son](https://github.com/thanhsondoan02), a fourth-year student of VNU University of Engineering and Technology.
+Created by [Doan Thanh Son](https://github.com/thanhsondoan02), a student at VNU University of Engineering and Technology, as part of his graduation thesis project.
 
 # Usage
 
@@ -54,4 +57,7 @@ For example, find other schedules for problem FT06, with optimal makespan 56 wit
 python other_solution.py FT06 56 60
 ```
 
-# Report
+# References
+- <a id="ref1"></a>[1] M. Koshimura, H. Nabeshima, H. Fujita, and R. Hasegawa, “Solving open job
+shop scheduling problems by sat encoding,” IEICE Transactions on Information
+ and Systems, vol. E93.D, no. 8, pp. 2316–2318, 2010
